@@ -7,3 +7,4 @@ safetensors
 huggingface_hub
 datasets
 scikit-learn
+matplotlib
