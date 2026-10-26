@@ -1,0 +1,9 @@
+pandas
+pyarrow
+fastparquet
+transformers
+datasets
+safetensors
+huggingface_hub
+datasets
+scikit-learn
