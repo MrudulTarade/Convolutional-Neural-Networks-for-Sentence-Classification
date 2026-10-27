@@ -18,16 +18,24 @@
 - **Paper:** Yoon Kim, Convolutional Neural Networks for Sentence Classification, EMNLP, 2014, doi.org/10.3115/v1/D14-1181
 - **Task:** Movie reviews with one sentence per review goes in and Classification involving detecting positive/negative reviews comes out,Customer reviews of various products (cameras, MP3s etc.) goes in and prediction of positive/negative reviews comes out.
 - **Their method in your own words:** []
-- **Their main result:** [the number(s) you want to reproduce, with table/figure number in the paper]
+- **Their main result:** 
+
+| Model | Movie Review (MR) | Customer Review (CR) |
+|---|---|---|
+| CNN-rand (random word vectors) | 76.1 % | 79.8 % |
+| CNN-static (word2vec, frozen) | 81.0 % | 84.7 % |
+| **CNN-non-static** (word2vec, fine-tuned) | **81.5 %** | 84.3 % |
+| CNN-multichannel | 81.1 % | 85.0 % |
+| NBSVM (Wang and Manning 2012), not a network | 79.4 % | 81.8 % |
 
 ## 2 · The data (start this week)
 
-| | |
-|---|---|
-| Source and version | Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), 1.0.0 , 15-10-2026 |
-| Licence | Apache 2.0 |
-| Size | 10662 samples, avg_len = 114 |
-| Classes or targets | [1 0], [5331 5331] (balanced) |
+| Dataset | Movie Review (MR) | Customer Review (CR) |
+|---|---|---|
+| Source and version | Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), 1.0.0 , 15-10-2026 | Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), 1.0.0 , 15-10-2026 |
+| Licence | Apache 2.0 | Unknown (From Research Paper: https://www.cs.uic.edu/~liub/FBS/opinion-mining-final-WSDM.pdf) |
+| Size | 10,662 samples, avg_len = 114 char/s | 3,770 samples, avg_len = 19 - 20 words |
+| Classes or targets | [1 0], [5331 5331] (balanced) | [1 0], [2405 1365] (unbalanced) |
 | Splits | 8530 / 1066 / 1066; **how** you split: random, grouped (by patient, place, …), by time; why] |
 | Preprocessing | [resizing, standardisation (statistics from the training set only), cleaning] |
 | Leakage checks | [duplicates between splits? the same patient/place/time in two splits? preprocessing fitted on all data? what you did about it] |
@@ -42,11 +50,11 @@
 | | The paper says | Where (page, table, code) | What we use |
 |---|---|---|---|
 | Data: version, split | 1.0.0, 3 splits | def _split_generators(self, dl_manager) | same split |
-| Model: layers, sizes, pretrained? | | | |
-| Training: optimiser, learning rate, schedule | | | |
-| Training: epochs, batch size | | | |
-| Augmentation and preprocessing | | | |
-| Metric, and how it was averaged | | | |
+| Model: layers, sizes, pretrained? |One convolutional layer; filter widths 3, 4, 5; 100 feature maps per width; 300-dimensional pretrained word2vec embeddings; max-over-time pooling; fully connected softmax output; ReLU activation. | | |
+| Training: optimiser, learning rate, schedule |Adadelta; explicit learning rate and external schedule not reported; early stopping on development data.| | |
+| Training: epochs, batch size | Not Explicit, 50 | | |
+| Augmentation and preprocessing |Tokenization, Padding, Embedding | | |
+| Metric, and how it was averaged | Accuracy (%); 10-fold cross-validation for datasets without standard train/test splits. Exact fold aggregation and macro/micro averaging are not specified.| | |
 
 - **Setup:** [framework and versions; anything not in the table]
 - **What the paper did not say,** and what you chose instead: [list, from the "not stated" rows]
