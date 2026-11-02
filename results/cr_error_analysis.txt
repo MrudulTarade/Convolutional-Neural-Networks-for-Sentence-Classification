@@ -1,0 +1,18 @@
+Best CNN variant: cnn_mr_finetune_oversample
+
+              precision    recall  f1-score   support
+
+         neg       0.75      0.70      0.72      1365
+         pos       0.84      0.86      0.85      2400
+
+    accuracy                           0.80      3765
+   macro avg       0.79      0.78      0.79      3765
+weighted avg       0.80      0.80      0.80      3765
+
+
+Most confident wrong predictions:
+  true=neg  p_pos=1.000  |  on the plus side it ' s packed with features , including bluetooth that works fine it ' s really a tiny computer that is also a phone and that ' s the negative
+  true=neg  p_pos=1.000  |  although the sd500 takes great quality photos , the sensitivity of the lcd compromises the quality overall
+  true=neg  p_pos=1.000  |  i replaced it with a router raiser and it works much better
+  true=neg  p_pos=1.000  |  if you think you are saving 40 getting the hitachi , you are right , and you are also getting a router worth 40 less than a makita
+  true=neg  p_pos=1.000  |  this isn 't uncommon in cameras , though , just as long as you bring your charger and spare batteries , you should be fine
