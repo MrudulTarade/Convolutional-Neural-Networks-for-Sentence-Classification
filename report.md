@@ -173,7 +173,15 @@ Write CNN Model Code.txt
 
 ## 8 · Use of AI tools (5 %)
 
-[Which tools you used, for what (code, text, debugging), and how you **checked** their output. Be specific.]
+ChatGPT (OpenAI)
+Purpose: Used as an AI-assisted research, learning, and development tool throughout the Movie Review sentiment-classification project.
+- Research and understanding: Explored concepts related to sentiment analysis, TF-IDF, Logistic Regression, Naive Bayes, NBSVM, CNNs, Word2Vec, cross-validation, and model evaluation.
+- Experimental planning: Discussed different model configurations, embedding strategies, evaluation approaches, and potential improvements, including model ensembling and probability calibration.
+- Debugging: Used to investigate errors during model development, understand their causes, and identify possible solutions. For example, resolving the Pandas Series and SciPy sparse-matrix indexing incompatibility during NBSVM experiments.
+- Experiment automation: Used to design an efficient experimental workflow for testing multiple CNN configurations across cross-validation folds. This included organising parameter experiments, saving fold-level results, caching predictions, and supporting the resumption of interrupted experiments.
+- Documentation: Used to structure methodology descriptions, explain implementation decisions, formulate experimental hypotheses, and improve technical documentation.
+
+Output verification: Suggestions and explanations were checked against the actual implementation, execution results, dataset structure, and evaluation metrics. Debugging solutions were tested before adoption. Experimental results were independently examined through saved CSV files, metrics, and plots. Research-related claims and architecture details were compared with the referenced paper rather than accepted solely on the basis of AI-generated responses.
 
 
 ## 9 · Reproducibility (part of 25 %)
