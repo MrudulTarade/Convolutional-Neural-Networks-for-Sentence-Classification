@@ -1,0 +1,4 @@
+model,accuracy_mean,accuracy_std,f1_macro_mean,f1_macro_std,neg_recall_mean,neg_recall_std,paper_accuracy,seeds_x_folds
+cnn_nonstatic,83.2,1.5,81.7,1.7,75.7,3.5,84.3,3 x 10
+cnn_rand,79.1,1.9,76.8,2.2,65.9,5.0,79.8,3 x 10
+cnn_static,82.8,1.5,81.1,1.7,74.0,4.4,84.7,3 x 10
