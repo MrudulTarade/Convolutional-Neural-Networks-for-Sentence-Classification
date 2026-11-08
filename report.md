@@ -117,6 +117,22 @@ To ensure reproducibility, experimental decisions not explicitly specified in th
 - **Statistical comparison:** [test and result, for example a paired test over seeds or folds (Session 31)]
 - **Test set:** used **once**, for the final models only.
 
+**(MR Mrudul)**
+\- \*\*Idea:\*\* train the Kim CNN on the MR dataset (10,662 movie reviews), comparing three embedding strategies: CNN-Rand (randomly initialised and trainable embeddings), CNN-Static (pretrained Word2Vec embeddings kept frozen), and CNN-NonStatic (pretrained Word2Vec embeddings fine-tuned during training).
+
+\- \*\*Why it should help:\*\* pretrained Word2Vec embeddings provide semantic information learned from a much larger text corpus, giving the CNN a stronger starting point than randomly initialised embeddings. The CNN can then learn sentiment-related phrase patterns through its convolutional filters. Fine-tuning the embeddings may allow the model to adapt the pretrained representations to movie-review sentiment.
+
+\- \*\*Expected effect:\*\* higher accuracy and macro-F1 for CNN-Static and CNN-NonStatic than CNN-Rand, with CNN-NonStatic potentially performing best. Kim (2014) reported 76.1% accuracy for CNN-Rand, 81.0% for CNN-Static and 81.5% for CNN-NonStatic on MR. These are reference results, not guaranteed outcomes for our implementation.
+
+\- \*\*Second change (from feedback):\*\* combine the CNN with NBSVM using a soft-voting ensemble. Train both models independently on the same training folds, then combine their predicted probabilities using a weighted average. Expected: improved accuracy and macro-F1 if the two models capture complementary sentiment patterns and make different classification errors.
+
+Important distinction: MR contains 5,331 positive and 5,331 negative reviews, so it is already balanced. Unlike CR, class weighting or minority-class oversampling is not necessary for MR. The ensemble is a more meaningful second experiment here.&#x20;
+
+Model results hypothesis.txt
+
+Write CNN Model Code.txt
+
+
 **(CR · Ashok)**
  
 **Design:** we change one thing at a time and keep everything else fixed: the same 10 folds, the same dev split, 25 epochs, 3 seeds per setting. Numbers are mean ± sample SD over the 10 folds (`results/cr_ablation_summary.csv`).
