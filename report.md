@@ -185,6 +185,76 @@ Output verification: Suggestions and explanations were checked against the actua
 
 
 ## 9 · Reproducibility (part of 25 %)
+
+
+#### 1. Requirements
+
+Make sure Python is installed on your system. Install the required dependencies listed in `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+You will also require ` GoogleNews-vectors-Negative300.bin `(3.64GB) for CNN models that use pre-trained word vectors. 
+Download-link: https://www.kaggle.com/datasets/leadbest/googlenewsvectorsnegative300
+
+#### 2. Clone the Repository
+
+Clone the repository using Git:
+
+```bash
+git clone <https://github.com/MrudulTarade/Convolutional-Neural-Networks-for-Sentence-Classification>
+```
+
+Navigate into the project directory:
+
+```bash
+cd <Convolutional Neural Networks for Sentence Classification>
+```
+
+#### 3. Repository Structure
+
+The repository is organized as follows:
+
+```text
+├── data/
+│   └── Movie and Customer Review datasets
+│
+├── notebooks/
+│   ├── movie_review.ipynb
+│   └── customer_review.ipynb
+│
+├── results/
+│   └── Model evaluation results
+│
+├── figures/
+│   └── Generated plots and visualizations
+│
+├── requirements.txt
+└── README.md
+```
+
+**Directory overview:**
+
+- **data/** – Contains the datasets used for movie review and customer review sentiment classification.
+- **notebooks/** – Contains the Jupyter notebooks with the respective experiments:
+  - `movie_review.ipynb` – Movie review sentiment classification.
+  - `customer_review.ipynb` – Customer review sentiment classification.
+- **results/** – Contains the evaluation results and model performance comparisons.
+- **figures/** – Contains plots and visualizations generated during the experiments.
+
+#### 4. Running the Experiments
+
+The experiments are implemented in Jupyter notebooks.
+
+1. Navigate to the `notebooks/` directory.
+2. Open the notebook corresponding to the dataset you want to experiment with.
+3. Execute the notebook cells sequentially, starting from the imports and data preparation sections.
+
+The notebooks cover the data preparation, model training, evaluation, and comparison processes.
+
+**CNN implementation:** The CNN experiments are designed to run using Google Colab with GPU acceleration. Upload the relevant notebook and dataset to Colab, select a GPU runtime under **Runtime → Change runtime type**, and execute the notebook cells sequentially.
+
+Import the ` GoogleNews-vectors-Negative300.bin ` in collab for the CNN.
  
 **(CR · Ashok)**
 - **Install:** `python3.11 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt` (pinned versions).
@@ -198,7 +268,28 @@ Output verification: Suggestions and explanations were checked against the actua
 | 1–12: data, LogReg, NBSVM, CNN-rand, MR zero-shot | `cr_baseline_cv.csv`, `cr_cnn_rand_cv.csv`, `cr_transfer_mr.csv`, `figures/cr_class_balance.png`, `figures/cr_confusion_logreg.png` |
 | 13–15: ablation, paired tests, error analysis | `cr_ablation_cv.csv`, `cr_ablation_summary.csv`, `cr_paired_tests.csv`, `cr_oof_seed0.csv`, `cr_error_analysis.txt`, `figures/cr_confusion_best_cnn.png` |
 | 16–17: word2vec CNNs | `cr_word2vec_cv.csv`, `cr_word2vec_summary.csv`, `cr_word2vec_paired.csv` |
- 
+
+**MR Mrudul**
+Seeds and hardware: The documented CNN configuration uses SEED = 42, StratifiedKFold(n_splits=10, shuffle=True, random_state=42), and an internal stratified development split with random_state=42. CNN settings: vocabulary limit 30,000, sequence length 100, embedding dimension 300, 100 filters, filter widths [3, 4, 5], dropout 0.5, batch size 50, 25 epochs, and Adadelta. The experiment runner saves completed folds and skips them on restart. CNN training was intended for Google Colab GPU; a T4 was recommended. The Google News Word2Vec file is approximately 3.4 GB. Exact hardware used for completed runs and all random seeds for the reported metrics are not confirmed.
+
+1. Colab setup and execution
+- Environment: Google Colab with a GPU runtime, preferably T4 for CNN training.
+- Dataset: Load the three Parquet files (train.parquet, validation.parquet, test.parquet). For the combined 10-fold experiments, concatenate them into one dataset of approximately 10,662 reviews, with 5,331 positive and 5,331 negative examples.
+- Word embeddings: Download Google News Word2Vec 300-dimensional vectors through the KaggleHub dataset approach. The binary file is approximately 3.4 GB and requires sufficient RAM.
+- Reproducibility: Set Python, NumPy and TensorFlow seeds to 42; enable TensorFlow deterministic operations where supported. Use stratified folds so both sentiment classes are represented consistently.
+- Execution: Run the baseline first, then the individual CNN configurations, and finally the CNN–NBSVM experiments. The automated runner saves results after each completed fold and skips completed folds when restarted.
+2. Evaluation protocol
+The CNN–NBSVM runner follows this procedure for each outer fold:
+1. Create stratified 10-fold cross-validation.
+2. Divide the outer training fold into 85% model-fitting data and 15% calibration data.
+3. Train CNN-NonStatic and NBSVM on the same model-fitting data.
+4. Calibrate both models using the calibration subset.
+5. Average their calibrated probabilities with equal weights (50/50).
+6. Select the classification threshold using calibration macro-F1.
+7. Evaluate on the untouched outer test fold.
+8. Save the fold's results so the experiment can resume after interruption.
+Important: This combined 10-fold experiment uses all three original Parquet splits together. Therefore, the original fixed test split is not an independent test set for this experiment. The outer cross-validation folds provide the evaluation instead.
+
 ## References
  
 - Kim, Y. (2014). Convolutional Neural Networks for Sentence Classification. EMNLP, doi.org/10.3115/v1/D14-1181.
