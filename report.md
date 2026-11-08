@@ -66,6 +66,16 @@ EXAMPLE · POSITIVE · Customer Review
 - **What the paper did not say,** and what you chose instead: [list, from the "not stated" rows]
   - **CR:** Number of epochs (we use 25), Adadelta settings (from Kim's code), dev-set size (10 %), fold seed (42), how folds are averaged (mean ± sample SD), which sentences build the vocabulary (training part only), number of seeds (we use 3).
 
+  **MR**
+  ### Experimental Setup and Implementation Details
+
+The Movie Review (MR) dataset consists of 10,662 movie reviews, comprising 5,331 positive and 5,331 negative samples. The experiments use Python 3.11, scikit-learn 1.9.1, Hugging Face datasets 5.1.0 and Gensim 4.4.0. Model training is conducted using the specified deep learning environment, with Apple MPS for local computation and Google Colab T4 GPU for Word2Vec training.
+
+The CNN experiments follow the architecture proposed by Kim (2014), using three convolutional filter widths (3, 4 and 5), 100 feature maps per filter, 300-dimensional word embeddings, ReLU activation, max-over-time pooling, dropout of 0.5 and a max-norm constraint of 3.
+
+To ensure reproducibility, experimental decisions not explicitly specified in the paper were fixed as follows: 25 training epochs, Adadelta optimizer settings based on Kim's original implementation, a development set comprising 10% of the outer training fold, and a fold-assignment random seed of 42. Vocabulary construction is restricted to the training portion of each fold to prevent data leakage. Model performance is evaluated using stratified 10-fold cross-validation and repeated across three random seeds. Results are reported as mean performance ± sample standard deviation.
+
+
 | | Paper | Ours (mean ± spread, n seeds) |
 |---|---|---|
 | CR ·TF-IDF + LogReg	| not in the paper |	78.5 ± 1.8 % (10 folds, 1 seed each) |
