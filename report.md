@@ -159,7 +159,12 @@ CNN + NBSVM (best configuration) is 0.2 points ± 0.2 better than CNN + NBSVM (b
 ## 6 · Evaluation and error analysis (15 %)
 
 **MR . Mrudul**
-
+1. Summary
+The experiment investigated whether combining NBSVM and a pretrained CNN through equal-weight soft voting, with probability calibration and validation-based threshold selection, could improve sentiment classification over the NBSVM baseline of 78.46% accuracy. The prediction analysis covered 10,662 reviews, of which 7,393 (69.34%) were confidently correct, 1,272 (11.93%) confidently incorrect, 970 (9.10%) uncertain, and 1,027 (9.63%) fell into the intermediate-confidence category.
+2. Evaluation Analysis 
+The evaluation considered accuracy and macro-F1 for classification performance, alongside prediction confidence and correctness to examine how reliably the ensemble makes decisions. Among the 8,665 predictions with confidence of at least 0.60, 85.32% were correct and 14.68% were incorrect; however, the available results do not establish whether the ensemble improved upon NBSVM's 78.46% accuracy or achieved a higher macro-F1.
+3. Error Analysis and Limitations
+The main weakness is that 1,272 predictions were incorrect despite confidence of at least 0.60, suggesting that the ensemble sometimes makes strongly favoured but incorrect decisions, while the 970 uncertain predictions indicate difficulty distinguishing reviews near the decision boundary. The analysis is limited by the absence of a reported ensemble-versus-individual-model comparison, class-wise error breakdown, CNN–NBSVM disagreement analysis, and ensemble calibration measurements such as Brier score and ECE; therefore, complementary model behaviour and the reliability of the confidence scores remain unverified.
 
 **(CR · Ashok)**
 - **Metrics:** accuracy, macro-F1 and negative recall. CR is 64 % positive, so accuracy alone rewards always saying "positive" (63.8 %).
@@ -170,6 +175,7 @@ CNN + NBSVM (best configuration) is 0.2 points ± 0.2 better than CNN + NBSVM (b
 ## 7 · Conclusion
 
 [What you reproduced, what you improved, what you would try next.]
+**(MR · Mrudul):** We reproduced the NBSVM-based sentiment classification approach and developed a hybrid CNN–NBSVM ensemble using pretrained Word2Vec embeddings, probability calibration, and validation-based threshold selection. We extended the evaluation beyond accuracy and macro-F1 by analysing prediction confidence, identifying 69.34% confidently correct predictions and 11.93% confidently incorrect predictions. Next, we would investigate model disagreement, embedding coverage, and probability calibration, while comparing the ensemble directly against NBSVM to establish whether combining the models delivers a measurable performance improvement.
 
 **(CR · Ashok):** We reproduced Kim's CR results within about one SD: CNN-rand 79.1 % (paper 79.8 %), NBSVM 80.2 % (81.8 %), CNN-non-static 83.2 % (84.3 %). Our improvement, pretraining on movie reviews and then fine-tuning on CR, beats CNN-rand by +1.4 pp accuracy and +1.9 pp macro-F1, significant over the 10 folds. Class balancing did not help the CNN. Next steps: combine both ideas (start from word2vec, then pretrain on MR), and try freezing the convolution filters during fine-tuning.
 
@@ -223,7 +229,11 @@ The repository is organized as follows:
 │
 ├── notebooks/
 │   ├── movie_review.ipynb
+|   ├── cnn_nbsvm_hyperparameter_runner.py
+|   ├── cnn_nbsvm_seed_experiment_runner.py
+|   ├── cnn_nbsvm_predictions_runner.py
 │   └── customer_review.ipynb
+|   
 │
 ├── results/
 │   └── Model evaluation results
@@ -241,6 +251,9 @@ The repository is organized as follows:
 - **notebooks/** – Contains the Jupyter notebooks with the respective experiments:
   - `movie_review.ipynb` – Movie review sentiment classification.
   - `customer_review.ipynb` – Customer review sentiment classification.
+  - `cnn_nbsvm_hyperparameter_runner.py` - Find the best hyperparamter script.
+  - `cnn_nbsvm_seed_experiment_runner.py` - Find the best seed script.
+  - `cnn_nbsvm_predictions_runner.py` - Find the confidence level.
 - **results/** – Contains the evaluation results and model performance comparisons.
 - **figures/** – Contains plots and visualizations generated during the experiments.
 
@@ -257,6 +270,7 @@ The notebooks cover the data preparation, model training, evaluation, and compar
 **CNN implementation:** The CNN experiments are designed to run using Google Colab with GPU acceleration. Upload the relevant notebook and dataset to Colab, select a GPU runtime under **Runtime → Change runtime type**, and execute the notebook cells sequentially.
 
 Import the ` GoogleNews-vectors-Negative300.bin ` in collab for the CNN.
+
  
 **(CR · Ashok)**
 - **Install:** `python3.11 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt` (pinned versions).
@@ -286,10 +300,8 @@ The CNN–NBSVM runner follows this procedure for each outer fold:
 2. Divide the outer training fold into 85% model-fitting data and 15% calibration data.
 3. Train CNN-NonStatic and NBSVM on the same model-fitting data.
 4. Calibrate both models using the calibration subset.
-5. Average their calibrated probabilities with equal weights (50/50).
-6. Select the classification threshold using calibration macro-F1.
-7. Evaluate on the untouched outer test fold.
-8. Save the fold's results so the experiment can resume after interruption.
+5. Run one script at a time to load the results in the results folder.
+6. Categorize the classification based on Confidence level, using the last cell code of movie_review.ipynb.
 Important: This combined 10-fold experiment uses all three original Parquet splits together. Therefore, the original fixed test split is not an independent test set for this experiment. The outer cross-validation folds provide the evaluation instead.
 
 ## References

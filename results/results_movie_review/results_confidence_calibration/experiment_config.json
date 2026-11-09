@@ -1,0 +1,51 @@
+{
+  "config": {
+    "n_splits": 10,
+    "seeds": [
+      21,
+      42
+    ],
+    "filter_sizes": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "num_filters": 50,
+    "dropout": 0.3,
+    "epochs": 15,
+    "batch_size": 50,
+    "embedding_dim": 300,
+    "learning_rate": 1.0,
+    "max_vocab": 30000,
+    "max_length": null,
+    "max_norm": 3.0,
+    "adadelta_rho": 0.95,
+    "adadelta_epsilon": 1e-06,
+    "nb_alpha": 1.0,
+    "nb_C": 0.1,
+    "nb_max_iter": 5000,
+    "nb_min_df": 2,
+    "nb_max_features": 200000,
+    "nb_ngram_range": [
+      1,
+      2
+    ],
+    "cnn_weight": 0.5,
+    "nbsvm_weight": 0.5,
+    "calibration_fraction": 0.15,
+    "threshold_min": 0.05,
+    "threshold_max": 0.95,
+    "threshold_steps": 181,
+    "deterministic_ops": true
+  },
+  "paths": {
+    "train": "/content/drive/MyDrive/data/train.parquet",
+    "validation": "/content/drive/MyDrive/data/validation.parquet",
+    "test": "/content/drive/MyDrive/data/test.parquet",
+    "word2vec": "/content/drive/MyDrive/data/GoogleNews-vectors-negative300.bin"
+  },
+  "text_column": "text",
+  "label_column": "label",
+  "protocol": "Stratified 10-fold outer CV; 85/15 fit/calibration split within outer training fold; calibrated 50/50 CNN-NonStatic/NBSVM ensemble; threshold selected on calibration predictions."
+}

@@ -673,10 +673,6 @@ def run_configuration(
         # SAVE INDIVIDUAL OUT-OF-FOLD PREDICTIONS
         # ==========================================
 
-        import os
-        import pandas as pd
-        import numpy as np
-
         # MAP THESE TO YOUR EXISTING VARIABLES:
         # FOLD                 -> current fold number
         # TEST_INDICES         -> original row indices of the held-out fold
