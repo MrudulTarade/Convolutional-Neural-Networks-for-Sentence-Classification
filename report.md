@@ -83,13 +83,15 @@ To ensure reproducibility, experimental decisions not explicitly specified in th
 | CR ·CNN-rand |	79.8 % |	79.1 ± 1.9 %	(10 folds, 1 seed each) |
 | CR ·CNN-static (word2vec, frozen) |	84.7 % |	82.8 ± 1.5 % (10 folds, 1 seed each)|
 | CR ·CNN-non-static (word2vec, fine-tuned) |	84.3 % |	83.2 ± 1.5 % (10 folds, 1 seed each)|
-| MR · CNN-rand accuracy |  |  |
-| MR · CNN-static accuracy | 81.8 % | 80.2 ± 1.9 % (10 folds) |
-| MR · CNN-NonStatic accuracy | 79.8 % | 79.3 ± 1.7 % (10 folds, 1 seed each) |
-| MR · NBSVM accuracy | 81.8 % | 80.2 ± 1.9 % (10 folds) |
+| MR · CNN-rand accuracy | 76.1 % | 74.8 ± 1.2% (10 folds) |
+| MR · CNN-static accuracy | 81 % | 74 ± 1.6 % (10 folds) |
+| MR · CNN-NonStatic accuracy | 81.5 % | 75.7 ± 1.0 % (10 folds) |
+| MR · NBSVM accuracy | 79.4 % | 78.4 ± 1.1 % (10 folds) |
 [Why the numbers differ, if they do: data version, preprocessing, compute, missing details. A difference that you explain is a result, too.]
 
 **(CR):** CNN-rand (−0.7 pp), NBSVM (−1.6) and CNN-non-static (−1.1) are within one SD of the paper; CNN-static (−1.9, SD 1.5) is just outside. Likely causes: our vocabulary comes from the training folds only, we have 10 fewer sentences, our random folds differ, our NBSVM is simplified, and the hardware differs. word2vec clearly helps: +3.6 pp (static) and +4.1 pp (non-static) over CNN-rand, better on 9 and 10 of the 10 folds (p ≤ 0.004, results/cr_word2vec_paired.csv). The mid-course slides showed CNN-rand at 79.3 %: that was an earlier single-seed run, and Apple MPS is not fully deterministic.
+
+**(MR):** The CNN-rand model achieved an accuracy of 74.8%, which is relatively close to the 76.1% reported by Kim (2014). However, CNN-static and CNN-non-static achieved 74.0% and 75.7%, respectively, compared with the published results of 81.0% and 81.5%. Unlike the original paper, pretrained embeddings did not produce a substantial improvement over randomly initialized embeddings in our experiments. CNN-non-static performed better than CNN-static, suggesting that fine-tuning pretrained embeddings helps adapt word representations to the sentiment classification task. The difference from the published results may be associated with differences in preprocessing, embedding coverage, implementation and training configuration.
 
 ## 4 · Your improvement (20 %)
 
@@ -104,33 +106,34 @@ To ensure reproducibility, experimental decisions not explicitly specified in th
 - **Expected effect:** higher accuracy and macro-F1 than CNN-rand on the same folds.
 - **Second change (from feedback):** class balancing on the training folds only — a class-weighted cross-entropy loss (weights n/(2·n_c)) and, separately, random oversampling of the minority (negative) class. Expected: macro-F1 and negative recall up, accuracy roughly flat.
 
+
+**(MR · Movie Review)**
+
+- **Idea:** combine a pretrained Kim CNN (using Google News Word2Vec embeddings) with NBSVM on the same MR 10-fold cross-validation folds. Train both models independently, calibrate their predicted probabilities, and combine them using soft voting (initially 50/50). The CNN uses pretrained word representations to learn local sentiment patterns, while NBSVM captures strong word-level sentiment associations.
+- **Why it should help:** MR contains 10,662 reviews and is balanced (5,331 positive and 5,331 negative). Our reported NBSVM accuracy is 78.46%, compared with 76.36% for TF-IDF + Logistic Regression. The CNN results have varied across experiments: CNN-rand previously achieved 51.04%, while a later comparison reported 74.8% for CNN-rand, 74.0% for CNN-static, and 75.7% for CNN-non-static. This suggests that pretrained embeddings alone have not consistently delivered the expected improvement. However, NBSVM and CNN learn sentiment differently, so their prediction errors may be complementary.
+- **Expected effect:** higher accuracy and macro-F1 than NBSVM alone (78.46%), provided the CNN contributes useful, complementary predictions. **Confidence: medium-low** — the idea is technically sound, but improvement depends on error complementarity, embedding coverage, and probability calibration. We need to verify these before expecting an ensemble gain.
+
+
 ## 5 · Experiments (part of 20 % and 15 %)
 
-- **Design:** one change at a time; the same data splits, the same budget; at least three seeds per setting.
+- **Design:** One-factor-at-a-time hyperparameter screening using fixed 10-fold CV (seed 42), followed by confirmation of the selected best configuration across three random seeds (21, 42, 100), keeping the evaluation protocol and training conditions consistent.
 
-| Setting | [metric] mean | ± spread | seeds |
-|---|---|---|---|
-| baseline | | | |
-| + [change 1] | | | |
-| + [change 2] | | | |
+| Setting | Accuracy mean | ± std | seeds | values tried | for best value |
+|---|---|---|---|---|---|
+| CNN + NBSVM | 79.9% | 1.2% | 21, 42, 100 | - | **21** |
+| dropout | 79.2% | 1.2% | 42 | 0.3, 0.5, 0.7 | **0.3** | 
+| filter_size | 79.36% | 1% | 42 | [2,3,4], [3,4,5], [3,4,5,6] | **[3,4,5,6]** |
+| num_filters | 79.5% | 0.6% | 42 | 50, 100, 150 | **50** |
+| epochs | 79.4% | 1.1% | 42 | 15, 25, 35 | **15** |
+| CNN + NBSVM (with best of above)| 80.3% | 1.1% | 21, 42, 100 | - | **21** |
 
-- **Statistical comparison:** [test and result, for example a paired test over seeds or folds (Session 31)]
-- **Test set:** used **once**, for the final models only.
+| Model | test accuracy (%), 3 runs |
+|---|---|
+| CNN + NBSVM (base configuration) | 79.7 ± 0.5 |
+| CNN + NBSVM (best configuration) | 79.9 ± 0.5 |
 
-**(MR Mrudul)**
-\- \*\*Idea:\*\* train the Kim CNN on the MR dataset (10,662 movie reviews), comparing three embedding strategies: CNN-Rand (randomly initialised and trainable embeddings), CNN-Static (pretrained Word2Vec embeddings kept frozen), and CNN-NonStatic (pretrained Word2Vec embeddings fine-tuned during training).
+CNN + NBSVM (best configuration) is 0.2 points ± 0.2 better than CNN + NBSVM (base configuration) (3 runs with the same seeds; paired t-test p = 0.2801, not significant; Wilcoxon p = 0.5000).
 
-\- \*\*Why it should help:\*\* pretrained Word2Vec embeddings provide semantic information learned from a much larger text corpus, giving the CNN a stronger starting point than randomly initialised embeddings. The CNN can then learn sentiment-related phrase patterns through its convolutional filters. Fine-tuning the embeddings may allow the model to adapt the pretrained representations to movie-review sentiment.
-
-\- \*\*Expected effect:\*\* higher accuracy and macro-F1 for CNN-Static and CNN-NonStatic than CNN-Rand, with CNN-NonStatic potentially performing best. Kim (2014) reported 76.1% accuracy for CNN-Rand, 81.0% for CNN-Static and 81.5% for CNN-NonStatic on MR. These are reference results, not guaranteed outcomes for our implementation.
-
-\- \*\*Second change (from feedback):\*\* combine the CNN with NBSVM using a soft-voting ensemble. Train both models independently on the same training folds, then combine their predicted probabilities using a weighted average. Expected: improved accuracy and macro-F1 if the two models capture complementary sentiment patterns and make different classification errors.
-
-Important distinction: MR contains 5,331 positive and 5,331 negative reviews, so it is already balanced. Unlike CR, class weighting or minority-class oversampling is not necessary for MR. The ensemble is a more meaningful second experiment here.&#x20;
-
-Model results hypothesis.txt
-
-Write CNN Model Code.txt
 
 
 **(CR · Ashok)**
@@ -155,9 +158,8 @@ Write CNN Model Code.txt
 
 ## 6 · Evaluation and error analysis (15 %)
 
-- [Metrics that fit the task (not only accuracy): confusion matrix, precision, recall, F1, IoU, …]
-- [Where does the model fail? Examples of its most confident mistakes; which classes are confused, and why]
-- [Limitations: what your results do **not** show]
+**MR . Mrudul**
+
 
 **(CR · Ashok)**
 - **Metrics:** accuracy, macro-F1 and negative recall. CR is 64 % positive, so accuracy alone rewards always saying "positive" (63.8 %).

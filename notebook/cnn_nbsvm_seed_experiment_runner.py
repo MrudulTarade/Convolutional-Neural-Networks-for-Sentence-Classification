@@ -1,15 +1,15 @@
 """
-CNN-NonStatic + NBSVM hyperparameter experiment runner
+CNN-NonStatic + NBSVM best-configuration, three-seed runner
 ======================================================
 
 Google Colab:
     !pip install -q pandas pyarrow scikit-learn gensim matplotlib
 
-Edit PATHS and RUN_BLOCKS below, then run this file/notebook cell.
+Edit PATHS below, then run this file in Google Colab.
 
 Protocol:
 - Concatenate disjoint train/validation/test Parquet partitions.
-- Stratified 10-fold outer CV, with the seed selected by the active experiment.
+- Stratified 10-fold outer CV, repeated independently for seeds 21, 42 and 100.
 - Within each outer training fold: 85% model-fit / 15% calibration.
 - Fit CNN and NBSVM on the same model-fit data.
 - Calibrate each model's scores on the calibration subset.
@@ -74,12 +74,12 @@ BASE_CONFIG = {
     "seed": 42,
     "max_vocab": 30000,
     "embedding_dim": 300,
-    "filter_sizes": [3, 4, 5],
-    "num_filters": 100,
-    "dropout": 0.5,
+    "filter_sizes": [3, 4, 5, 6],
+    "num_filters": 50,
+    "dropout": 0.3,
     "max_norm": 3.0,
     "batch_size": 50,
-    "epochs": 25,
+    "epochs": 15,
     "learning_rate": 1.0,
     "adadelta_rho": 0.95,
     "adadelta_epsilon": 1e-6,
@@ -91,18 +91,12 @@ BASE_CONFIG = {
     "n_splits": 10,
 }
 
-# Run only the seed experiment by default.
-# For all experiments, use: ["dropout", "num_filters", "filter_sizes", "epochs", "seeds"]
+# Run the selected best CNN configuration across three experimental seeds.
+# Kim (2014) does not report a reproducible CV random seed.
 RUN_BLOCKS = ["seeds"]
 
 EXPERIMENTS = {
-    "dropout": [0.3, 0.5, 0.7],
-    "num_filters": [50, 100, 150],
-    "filter_sizes": [[2, 3, 4], [3, 4, 5], [3, 4, 5, 6]],
-    "epochs": [15, 25, 35],
-    # These are experimental seeds from the project setup notes.
-    # Kim (2014) does not report a reproducible random seed.
-    "seeds": [21, 42, 100],
+    "seeds": [21,42],
 }
 
 OUTPUT_DIR = Path("/content/drive/MyDrive/results")
@@ -675,6 +669,68 @@ def run_configuration(
         # Equal-weight calibrated ensemble.
         ensemble_p_cal = 0.5 * cnn_p_cal + 0.5 * nb_p_cal
         ensemble_p_test = 0.5 * cnn_p_test + 0.5 * nb_p_test
+        # ==========================================
+        # SAVE INDIVIDUAL OUT-OF-FOLD PREDICTIONS
+        # ==========================================
+
+        import os
+        import pandas as pd
+        import numpy as np
+
+        # MAP THESE TO YOUR EXISTING VARIABLES:
+        # FOLD                 -> current fold number
+        # TEST_INDICES         -> original row indices of the held-out fold
+        # Y_TEST               -> true labels of the held-out fold
+        # ENSEMBLE_PROB        -> calibrated ensemble P(positive)
+        # SELECTED_THRESHOLD   -> threshold selected on calibration data
+        # ALL_REVIEWS          -> complete review-text array (optional)
+
+        prediction_dir = os.path.join(
+        OUTPUT_DIR,
+        "05_seeds",
+        "predictions"
+        )
+
+        os.makedirs(prediction_dir, exist_ok=True)
+
+        # Convert probabilities and labels to NumPy arrays
+        p_positive = np.asarray(ensemble_p_test).reshape(-1)
+        y_true = np.asarray(y_test).reshape(-1)
+        test_indices = np.asarray(outer_test_idx).reshape(-1)
+
+        # Apply the threshold selected using calibration data
+        y_pred = (p_positive >= threshold).astype(int)
+
+        # Confidence = probability assigned to the predicted class
+        confidence = np.where(
+        y_pred == 1,
+        p_positive,
+        1 - p_positive
+        )
+
+        fold_predictions = pd.DataFrame({
+        "sample_id": test_indices,
+        "seed": config["seed"],
+        "fold": fold,
+        "true_label": y_true,
+        "predicted_label": y_pred,
+        "positive_probability": p_positive,
+        "confidence": confidence,
+        "threshold": threshold,
+        })
+
+        # Optional: include original review text
+        fold_predictions["review"] = np.asarray(X_all)[test_indices]
+
+        # Save one file per seed and fold
+        prediction_file = os.path.join(
+        prediction_dir,
+        f"seed_{config["seed"]}_fold_{fold}.csv"
+        )
+
+        fold_predictions.to_csv(prediction_file, index=False)
+
+        print(f"Saved predictions: {prediction_file}")
 
         threshold, calibration_macro_f1 = best_macro_f1_threshold(
             y_cal, ensemble_p_cal
@@ -719,6 +775,13 @@ def run_configuration(
 def main():
     print("TensorFlow:", tf.__version__)
     print("GPU devices:", tf.config.list_physical_devices("GPU"))
+    print("\\nFixed CNN configuration:")
+    for key in (
+        "filter_sizes", "num_filters", "dropout", "epochs",
+        "batch_size", "embedding_dim", "learning_rate",
+    ):
+        print(f"  {key}: {BASE_CONFIG[key]}")
+    print("Seeds:", EXPERIMENTS["seeds"])
 
     X_all, y_all = load_all_data()
 
