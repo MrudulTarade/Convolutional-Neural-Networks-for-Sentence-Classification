@@ -71,7 +71,7 @@ TEXT_COL = "text"
 LABEL_COL = "label"
 
 BASE_CONFIG = {
-    "seed": 42,
+    "seed": 21,
     "max_vocab": 30000,
     "embedding_dim": 300,
     "filter_sizes": [3, 4, 5, 6],
@@ -80,7 +80,7 @@ BASE_CONFIG = {
     "max_norm": 3.0,
     "batch_size": 50,
     "epochs": 15,
-    "learning_rate": 1.0,
+    "learning_rate": 0.5,
     "adadelta_rho": 0.95,
     "adadelta_epsilon": 1e-6,
     "nb_alpha": 1.0,
@@ -93,10 +93,10 @@ BASE_CONFIG = {
 
 # Run the selected best CNN configuration across three experimental seeds.
 # Kim (2014) does not report a reproducible CV random seed.
-RUN_BLOCKS = ["seeds"]
+RUN_BLOCKS = ["learning_rate"]
 
 EXPERIMENTS = {
-    "seeds": [21,42],
+    "learning_rate": [0.5, 1.0, 0.3]
 }
 
 OUTPUT_DIR = Path("/content/drive/MyDrive/results")
@@ -777,7 +777,7 @@ def main():
         "batch_size", "embedding_dim", "learning_rate",
     ):
         print(f"  {key}: {BASE_CONFIG[key]}")
-    print("Seeds:", EXPERIMENTS["seeds"])
+    print("Learning rates:", EXPERIMENTS["learning_rate"])
 
     X_all, y_all = load_all_data()
 

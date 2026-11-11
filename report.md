@@ -1,4 +1,4 @@
-# Reproducing and Extending CNN-Based Sentiment Classification: Model Optimization, Cross-Domain Evaluation, and Confidence Estimation
+#  
 
 **Deep Learning · M.Sc. Applied Data Science and AI · SRH University Munich · Winter semester 2026/27**
 **Author(s):** Ashok Rai & Mrudul Tarade · **Repository:** (https://github.com/MrudulTarade/Convolutional-Neural-Networks-for-Sentence-Classification) · **Date:** 22-10-2026

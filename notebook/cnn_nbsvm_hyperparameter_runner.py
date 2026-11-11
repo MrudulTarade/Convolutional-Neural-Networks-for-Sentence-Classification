@@ -71,16 +71,16 @@ TEXT_COL = "text"
 LABEL_COL = "label"
 
 BASE_CONFIG = {
-    "seed": 42,
+    "seed": 21,
     "max_vocab": 30000,
     "embedding_dim": 300,
-    "filter_sizes": [3, 4, 5],
-    "num_filters": 100,
-    "dropout": 0.5,
+    "filter_sizes": [3, 4, 5, 6],
+    "num_filters": 50,
+    "dropout": 0.3,
     "max_norm": 3.0,
     "batch_size": 50,
-    "epochs": 25,
-    "learning_rate": 1.0,
+    "epochs": 15,
+    "learning_rate": 0.5,
     "adadelta_rho": 0.95,
     "adadelta_epsilon": 1e-6,
     "nb_alpha": 1.0,
@@ -93,13 +93,14 @@ BASE_CONFIG = {
 
 # Run one block at a time if GPU time is limited.
 # Example: RUN_BLOCKS = ["dropout"]
-RUN_BLOCKS = ["num_filters","filter_sizes","epochs"]  # Change to another block, or list all four when ready.
+RUN_BLOCKS = ["learning_rate"]  # Change to another block, or list all four when ready.
 
 EXPERIMENTS = {
     "dropout": [0.3, 0.5, 0.7],
     "num_filters": [50, 100, 150],
     "filter_sizes": [[2, 3, 4], [3, 4, 5], [3, 4, 5, 6]],
     "epochs": [15, 25, 35],
+    "learning_rate": [0.5, 1.0, 0.3],
 }
 
 OUTPUT_DIR = Path("/content/drive/MyDrive/results")
